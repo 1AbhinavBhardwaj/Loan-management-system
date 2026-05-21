@@ -1,0 +1,11 @@
+{
+  "name": "react-lms-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix class-app",
+    "build": "npm run build --prefix class-app",
+    "preview": "npm run preview --prefix class-app",
+    "lint": "npm run lint --prefix class-app"
+  }
+}

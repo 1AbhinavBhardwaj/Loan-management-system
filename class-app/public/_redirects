@@ -1,0 +1,3 @@
+/*  Netlify SPA redirect — all paths serve index.html  */
+/*  https://docs.netlify.com/routing/redirects/          */
+/* index 200 */
