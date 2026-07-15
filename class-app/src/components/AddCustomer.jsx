@@ -151,7 +151,7 @@ export default function AddCustomer({ simDate, onAddCustomer, onNavigate }) {
               />
             </div>
           )}
-
+          
           <div className="form-row">
             <label>Purchase Date</label>
             <input 
