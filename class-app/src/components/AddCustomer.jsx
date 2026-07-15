@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 export default function AddCustomer({ simDate, onAddCustomer, onNavigate }) {
-  
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -10,16 +9,13 @@ export default function AddCustomer({ simDate, onAddCustomer, onNavigate }) {
   const [downPayment, setDownPayment] = useState("");
   const [dueDate, setDueDate] = useState("");
 
-  
   const parsedPrice = parseFloat(price) || 0;
   const parsedDownPayment = parseFloat(downPayment) || 0;
   const remainingBalance = Math.max(0, parsedPrice - parsedDownPayment);
 
-  
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    
     if (!name.trim() || !phone.trim() || !productName.trim() || !price) {
       alert("Please fill in all the required fields!");
       return;
@@ -40,7 +36,6 @@ export default function AddCustomer({ simDate, onAddCustomer, onNavigate }) {
       return;
     }
 
-    
     const newCustomer = {
       name: name.trim(),
       phone: phone.trim(),
@@ -55,14 +50,12 @@ export default function AddCustomer({ simDate, onAddCustomer, onNavigate }) {
     };
 
     onAddCustomer(newCustomer);
-    
-    
     alert("New purchase registered successfully!");
     onNavigate("customer-list");
   };
 
   return (
-    <div className="page-container" style={{ maxWidth: "600px", margin: "0 auto" }}>
+    <div className="page-container" style={{ maxWidth: "650px", margin: "0 auto" }}>
       <h2>Register New Purchase</h2>
       <form onSubmit={handleSubmit} className="student-form">
         
@@ -83,10 +76,10 @@ export default function AddCustomer({ simDate, onAddCustomer, onNavigate }) {
           <div className="form-row">
             <label>Phone Number *</label>
             <input 
-              type="text" 
+              type="tel" 
               value={phone} 
               onChange={(e) => setPhone(e.target.value)} 
-              placeholder="10 digit phone number" 
+              placeholder="e.g. 9876543210" 
               required
             />
           </div>
@@ -106,7 +99,7 @@ export default function AddCustomer({ simDate, onAddCustomer, onNavigate }) {
           <legend>Product & Down-payment Details</legend>
           
           <div className="form-row">
-            <label>Product Name *</label>
+            <label>Product Name / Model *</label>
             <input 
               type="text" 
               value={productName} 
@@ -141,9 +134,9 @@ export default function AddCustomer({ simDate, onAddCustomer, onNavigate }) {
             <label>Remaining Balance (₹)</label>
             <input 
               type="text" 
-              value={remainingBalance} 
+              value={"₹" + remainingBalance.toLocaleString("en-IN")} 
               disabled 
-              style={{ backgroundColor: "#e9ecef" }}
+              style={{ backgroundColor: "#e9ecef", fontWeight: "700" }}
             />
           </div>
 
@@ -167,13 +160,20 @@ export default function AddCustomer({ simDate, onAddCustomer, onNavigate }) {
               disabled 
               style={{ backgroundColor: "#e9ecef" }}
             />
-            <small style={{ color: "#6c757d" }}>Automatically logged on current date.</small>
+            <small style={{ color: "#6c757d", marginTop: "4px" }}>Automatically logged on simulated date.</small>
           </div>
         </fieldset>
 
-        <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-          <button type="submit" className="action-btn-green">Save Purchase Record</button>
-          <button type="button" className="action-btn-gray" onClick={() => onNavigate("dashboard")}>Cancel</button>
+        <div style={{ marginTop: "30px", display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+          <button type="button" className="action-btn-gray" onClick={() => onNavigate("dashboard")}>
+            Cancel
+          </button>
+          <button type="submit" className="action-btn-green">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+            </svg>
+            Save Purchase Record
+          </button>
         </div>
       </form>
     </div>

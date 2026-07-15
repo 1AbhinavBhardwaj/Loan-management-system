@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function UpdatePayment({ 
   customers, 
@@ -7,13 +7,18 @@ export default function UpdatePayment({
   onRecordPayment, 
   onNavigate 
 }) {
-  
+  const calculateDefaultDueDate = (baseDate) => {
+    if (!baseDate) return "";
+    const date = new Date(baseDate);
+    date.setDate(date.getDate() + 30);
+    return date.toISOString().split("T")[0];
+  };
+
   const [payAmount, setPayAmount] = useState("");
   const [payNotes, setPayNotes] = useState("Installment payment");
-  const [nextDueDate, setNextDueDate] = useState("");
+  const [nextDueDate, setNextDueDate] = useState(() => calculateDefaultDueDate(simDate));
   const [customerId, setCustomerId] = useState(selectedCustomerId || "");
 
-  
   const formatRupees = (amount) => {
     return "₹" + Number(amount).toLocaleString("en-IN");
   };
@@ -25,29 +30,18 @@ export default function UpdatePayment({
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  
-  useEffect(() => {
-    if (selectedCustomerId) {
-      setCustomerId(selectedCustomerId);
-    }
-  }, [selectedCustomerId]);
-
-  
   const customer = customers.find((c) => c.id === customerId);
   const activeLoan = customer?.loans.find((l) => l.status === "active");
 
-  
   let showDurationWarning = false;
   let showTxCountWarning = false;
   let warningDurationDays = 0;
 
   if (activeLoan) {
-    
     if (activeLoan.transactions.length > 5) {
       showTxCountWarning = true;
     }
 
-    
     const days = calculateDays(activeLoan.startDate, simDate);
     warningDurationDays = days;
     if (days > 180) {
@@ -55,16 +49,6 @@ export default function UpdatePayment({
     }
   }
 
-  
-  useEffect(() => {
-    if (simDate) {
-      const date = new Date(simDate);
-      date.setDate(date.getDate() + 30);
-      setNextDueDate(date.toISOString().split("T")[0]);
-    }
-  }, [simDate]);
-
-  
   const handlePaymentSubmit = (e) => {
     e.preventDefault();
 
@@ -95,7 +79,6 @@ export default function UpdatePayment({
       return;
     }
 
-    
     onRecordPayment({
       customerId: customer.id,
       loanId: activeLoan.id,
@@ -110,24 +93,24 @@ export default function UpdatePayment({
   };
 
   return (
-    <div className="page-container" style={{ maxWidth: "600px", margin: "0 auto" }}>
+    <div className="page-container" style={{ maxWidth: "650px", margin: "0 auto" }}>
       <h2>Update Customer Payment</h2>
 
-      {}
-      <div className="form-row" style={{ marginBottom: "20px" }}>
-        <label className="bold">Select Customer *</label>
+      {/* Customer Selector Dropdown */}
+      <div className="form-row" style={{ marginBottom: "25px" }}>
+        <label className="bold">Select Customer Directory *</label>
         <select 
           value={customerId} 
           onChange={(e) => setCustomerId(e.target.value)}
           className="search-input"
-          style={{ width: "100%", padding: "8px" }}
+          style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-md)" }}
         >
-          <option value="">-- Select Customer from Directory --</option>
+          <option value="">-- Choose Customer --</option>
           {customers.map((c) => {
             const hasActive = c.loans.some((l) => l.status === "active");
             return (
               <option key={c.id} value={c.id}>
-                {c.name} ({c.phone}) {hasActive ? "[Active Loan]" : "[Cleared]"}
+                {c.name} ({c.phone}) {hasActive ? "⚡ [Active Loan]" : "✅ [Cleared]"}
               </option>
             );
           })}
@@ -138,9 +121,9 @@ export default function UpdatePayment({
         <form onSubmit={handlePaymentSubmit} className="student-form">
           <fieldset>
             <legend>Loan Details & Status</legend>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", padding: "10px 0" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", padding: "10px 0", fontSize: "14px" }}>
               <div>
-                <strong>Product:</strong> {activeLoan.productName}
+                <strong>Product:</strong> <span style={{ color: "var(--primary-text)" }}>{activeLoan.productName}</span>
               </div>
               <div>
                 <strong>Purchase Date:</strong> {activeLoan.startDate}
@@ -149,26 +132,31 @@ export default function UpdatePayment({
                 <strong>Original Price:</strong> {formatRupees(activeLoan.price)}
               </div>
               <div>
-                <strong>Total Outstanding:</strong> <span className="text-orange bold">{formatRupees(activeLoan.balance)}</span>
+                <strong>Outstanding Balance:</strong> <span className="text-orange bold">{formatRupees(activeLoan.balance)}</span>
               </div>
             </div>
 
-            {}
+            {/* Premium warning system alerts */}
             {(showDurationWarning || showTxCountWarning) && (
-              <div className="simple-alert-box">
-                <h4 style={{ margin: "0 0 5px 0", color: "#721c24" }}>⚠️ Warning System Alert</h4>
+              <div className="simple-alert-box" style={{ border: "1px solid rgba(220, 53, 69, 0.2)", backgroundColor: "var(--danger-bg)", color: "var(--danger-text)" }}>
+                <h4 style={{ margin: "0 0 5px 0", color: "var(--danger-text)", display: "flex", alignItems: "center", gap: "6px", fontSize: "14px" }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "18px", height: "18px" }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3Z" />
+                  </svg>
+                  System Alert: Account Risk Warning
+                </h4>
                 {showTxCountWarning && (
                   <p style={{ margin: "3px 0", fontSize: "13px" }}>
-                    - <strong>Transaction Threshold Exceeded:</strong> Customer has recorded {activeLoan.transactions.length} transactions (Limit: 5).
+                    • <strong>Transaction Threshold:</strong> Account logged {activeLoan.transactions.length} installments (Limit: 5).
                   </p>
                 )}
                 {showDurationWarning && (
                   <p style={{ margin: "3px 0", fontSize: "13px" }}>
-                    - <strong>Payment Duration Alert:</strong> Active loan duration has reached {warningDurationDays} days (~{(warningDurationDays/30).toFixed(1)} months), which exceeds the 6-month limit.
+                    • <strong>Payment Overdue:</strong> Active loan duration reached {warningDurationDays} days (~{(warningDurationDays/30).toFixed(1)} months), exceeding standard 6-month limit.
                   </p>
                 )}
-                <small style={{ color: "#856404", display: "block", marginTop: "5px" }}>
-                  Please review their payment capability before accepting further custom schedules.
+                <small style={{ color: "var(--text-secondary)", display: "block", marginTop: "5px" }}>
+                  Please verify payment capability prior to creating customized schedules.
                 </small>
               </div>
             )}
@@ -183,7 +171,7 @@ export default function UpdatePayment({
                 type="number" 
                 value={payAmount} 
                 onChange={(e) => setPayAmount(e.target.value)} 
-                placeholder={`Max limit: ${activeLoan.balance}`}
+                placeholder={`Outstanding: ${activeLoan.balance}`}
                 required
               />
             </div>
@@ -198,7 +186,6 @@ export default function UpdatePayment({
               />
             </div>
 
-            {}
             {parseFloat(payAmount) !== activeLoan.balance && (
               <div className="form-row">
                 <label>Next Due Date *</label>
@@ -217,19 +204,26 @@ export default function UpdatePayment({
                 type="text" 
                 value={payNotes} 
                 onChange={(e) => setPayNotes(e.target.value)} 
-                placeholder="UPI, Cash, Bank Transfer etc."
+                placeholder="UPI, Cash, Bank Transfer, etc."
               />
             </div>
           </fieldset>
 
-          <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-            <button type="submit" className="action-btn-blue">Add Payment</button>
-            <button type="button" className="action-btn-gray" onClick={() => onNavigate("customer-list")}>Back</button>
+          <div style={{ marginTop: "30px", display: "flex", gap: "12px", justifyContent: "flex-end" }}>
+            <button type="button" className="action-btn-gray" onClick={() => onNavigate("customer-list")}>
+              Back
+            </button>
+            <button type="submit" className="action-btn-blue">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" style={{ width: "16px", height: "16px" }}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+              </svg>
+              Record Payment
+            </button>
           </div>
         </form>
       ) : customer ? (
-        <div className="no-data">
-          <p>This customer does not have any active loans. All accounts are fully paid and closed!</p>
+        <div className="no-data" style={{ padding: "30px" }}>
+          <p>🎉 This customer does not have any active loans. All accounts are fully paid and closed!</p>
         </div>
       ) : null}
     </div>
